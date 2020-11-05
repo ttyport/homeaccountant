@@ -477,7 +477,7 @@ if __name__ == '__main__':
                 color: #ffffff;
                 background-color: #333333;
                 """
-    db = sqlite3.connect("db.db")
+    db = sqlite3.connect("~/.local/share/homeaccountant/db.db")
     # cursor = db.cursor()
     # query = "delete from purchases"
     # cursor.execute(query)
