@@ -478,6 +478,10 @@ if __name__ == '__main__':
                 background-color: #333333;
                 """
     path = f"{str(os.path.expanduser('~'))}/.local/share/homeaccountant/db.db"
+    try:
+        open(path)
+    except FileNotFoundError:
+        path = "db.db"
     db = sqlite3.connect(path)
     # cursor = db.cursor()
     # query = "delete from purchases"
