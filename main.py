@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-
+import os
 from PyQt5.QtSql import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -477,7 +477,8 @@ if __name__ == '__main__':
                 color: #ffffff;
                 background-color: #333333;
                 """
-    db = sqlite3.connect("db.db")
+    path = f"{str(os.path.expanduser('~'))}/.local/share/homeaccountant/db.db"
+    db = sqlite3.connect(path)
     # cursor = db.cursor()
     # query = "delete from purchases"
     # cursor.execute(query)
