@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
 import os
 from PyQt5.QtSql import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from hashlib import sha256
 import sqlite3
+import csv
 # from PyQt5.QtGui import QStyle
 # from PyQt5 import QStyleFactory
 from screeninfo import get_monitors
@@ -54,7 +56,7 @@ class LoginFirstTime(QDialog):
 
     def write(self):
         password = self.password.text()
-        if len(password) > 8:
+        if len(password) > 7:
             if password.lower() != password and password.upper() != password:
                 if any(map(str.isdigit, password)) and any(map(str.isalpha, password)):
                     if not any(char in password.lower() for char in near):
@@ -179,6 +181,17 @@ class Example(QMainWindow):
         delType.setShortcut('Ctrl+F')
         delType.setStatusTip('Delete type')
         delType.triggered.connect(self.deletetypedialog)
+
+        export = QAction('&Export data', self)
+        export.setShortcut('Ctrl+E')
+        export.setStatusTip('Export data to csv file')
+        export.triggered.connect(self.export)
+
+        import_file = QAction('&Import data', self)
+        import_file.setShortcut('Ctrl+I')
+        import_file.setStatusTip('Import data from csv file')
+        import_file.triggered.connect(self.import_file)
+
         self.statusBar()
 
         menubar = self.menuBar()
@@ -188,13 +201,15 @@ class Example(QMainWindow):
         fileMenu.addAction(addType)
         fileMenu.addAction(delSubtype)
         fileMenu.addAction(delType)
+        fileMenu.addAction(export)
+        fileMenu.addAction(import_file)
         self.x = get_monitors()[0].height
         self.y = get_monitors()[0].width
         self.setGeometry(0, 0, self.y, self.x)
         self.setWindowTitle('Home Accountant')
         self.saved = True
-        self.tableWidget = QTableWidget(self)
-        self.tableWidget.itemChanged.connect(self.item_changed)
+        self.tableWidget = QTableWidget()
+        # self.tableWidget.cellChanged.connect(self.item_changed)
         self.buttons = QTableWidget(self)
         self.mainwidget = QWidget(self)
         self.setCentralWidget(self.mainwidget)
@@ -206,12 +221,17 @@ class Example(QMainWindow):
         self.layout.addWidget(self.buttons)
         self.mainwidget.setLayout(self.layout)
         self.show()
+    #
+    # def item_changed(self, item):
+    #     print("Help me")
+    #     if self.titles[item.column()] == "Цена":
+    #         print(item.text())
+
 
     def init_type(self):
         cursor = db.cursor()
         query_types = "select * from types"
         result = cursor.execute(query_types).fetchall()
-        print(result)
         self.types = {}
         for i in result:
             self.types[i[1]] = i[0]
@@ -224,9 +244,9 @@ class Example(QMainWindow):
     def deletetypedialog(self):
         self.dialog_delete_type = QDialog()
         self.dialog_delete_type.setStyleSheet(appstyle)
-        self.dialog_delete_type.setWindowTitle("Delete subtype")
-        self.type_del_type = QLineEdit()
-        self.type_del_type.setPlaceholderText("Type")
+        self.dialog_delete_type.setWindowTitle("Delete Type")
+        self.type_del_type = QComboBox()
+        self.type_del_type.addItems(self.types.keys())
         ok = QPushButton("Delete", self.dialog_delete_type)
         savebtn = QPushButton("Cancel", self.dialog_delete_type)
         layout = QGridLayout()
@@ -240,24 +260,29 @@ class Example(QMainWindow):
 
     def deletetype(self):
         cursor = db.cursor()
-        query = f"delete from subtypes where type = {self.types[self.type_del_type.text()]}"
+        query = f"delete from subtypes where type = {self.types[self.type_del_type.currentText()]}"
         cursor.execute(query)
-        query = f"""delete from types where type = '{self.type_del_type.text()}'"""
+        query = f"""delete from types where type = '{self.type_del_type.currentText()}'"""
         cursor.execute(query)
         db.commit()
         self.init_type()
         self.init_buttons()
         self.dialog_delete_type.close()
-        print(self.types)
 
     def deletesubtypedialog(self):
         self.dialog_delete_type = QDialog()
         self.dialog_delete_type.setStyleSheet(appstyle)
         self.dialog_delete_type.setWindowTitle("Delete subtype")
-        self.type_del_type = QLineEdit()
-        self.type_del_type.setPlaceholderText("Type")
-        self.subtype_del_type = QLineEdit()
-        self.subtype_del_type.setPlaceholderText("Subtype")
+        self.type_del_type = QComboBox()
+        self.type_del_type.addItems(self.types.keys())
+        self.subtype_del_type = QComboBox()
+        keys = []
+        cursor = db.cursor()
+        result = cursor.execute(f"""select subtype from subtypes where type = {
+        self.types[self.type_del_type.currentText()]}""").fetchall()
+        for el in result:
+            keys.append(str(el[0]))
+        self.subtype_del_type.addItems(keys)
         ok = QPushButton("Delete", self.dialog_delete_type)
         savebtn = QPushButton("Cancel", self.dialog_delete_type)
         layout = QGridLayout()
@@ -271,7 +296,9 @@ class Example(QMainWindow):
         self.dialog_delete_type.exec_()
 
     def deletesubtype(self):
-        query = f"""delete from subtypes where subtype = '{self.subtype_del_type.text()}'"""
+        query = f"""delete from subtypes where subtype = '{
+        self.subtype_del_type.currentText()}' and type = {self.types[self.type_del_type.currentText()]}"""
+        print(query)
         cursor = db.cursor()
         cursor.execute(query)
         db.commit()
@@ -300,18 +327,26 @@ class Example(QMainWindow):
         self.dialog_delete_type.exec_()
 
     def addsubtype(self):
+        if type(self.subtype_add) != str and type(self.type_add) != str:
+            self.subtype_add = self.subtype_add.text()
+            self.type_add = self.type_add.text()
         cursor = db.cursor()
-        if self.type_add.text() not in self.types:
+        if self.type_add not in self.types:
             self.addtype()
         query = f"insert into subtypes(type, subtype) values('" \
-                f"{self.types[self.type_add.text()]}', '{self.subtype_add.text()}')"
+                f"{self.types[self.type_add]}', '{self.subtype_add}')"
         cursor.execute(query)
         db.commit()
         self.init_buttons()
-        self.dialog_delete_type.close()
+        try:
+            self.dialog_delete_type.close()
+        except AttributeError:
+            pass
 
     def addtype(self):
-        query = f"insert into types(type) values('{self.type_add.text()}')"
+        if type(self.type_add) != str:
+            self.type_add = self.type_add.text()
+        query = f"insert into types(type) values('{self.type_add}')"
         cursor = db.cursor()
         cursor.execute(query)
         db.commit()
@@ -322,7 +357,6 @@ class Example(QMainWindow):
         # Получили результат запроса, который ввели в текстовое поле
         result = cursor.execute("SELECT type, subtype, name, price FROM purchases").fetchall()
         # Заполнили размеры таблицы
-        # print(result)
         self.start_db = result
         try:
             self.tableWidget.setRowCount(len(result))
@@ -339,7 +373,7 @@ class Example(QMainWindow):
         # Заполнили таблицу полученными элементами
         for i, elem in enumerate(result):
             for j, val in enumerate(elem):
-                self.tableWidget.setItem(i, j, QTableWidgetItem(str(val)))
+                self.tableWidget.setItem(i, j, QTableWidgetItem(val))
         self.tableWidget.show()
         self.saved = True
 
@@ -406,6 +440,16 @@ class Example(QMainWindow):
                 data1 = {}
                 for j in range(4):
                     text = self.tableWidget.item(i, j).text()
+                    if j == 3:
+                        try:
+                            text = float(text)
+                        except ValueError:
+                            msg = "Цена должна быть числом"
+                            title = "Price error"
+                            reply = QMessageBox.critical(self, title, msg, QMessageBox.Ok)
+
+                            if reply == QMessageBox.Ok:
+                                return
                     data1[self.titles[j]] = text
                 data.append(data1)
             cursor = db.cursor()
@@ -456,6 +500,56 @@ class Example(QMainWindow):
         else:
             qApp.quit()
 
+    def export(self):
+        try:
+            data = []
+            for i in range(self.tableWidget.rowCount()):
+                data1 = {}
+                for j in range(4):
+                    text = self.tableWidget.item(i, j).text().strip("\n")
+                    data1[self.titles[j]] = text
+                data.append(data1)
+
+            path = QFileDialog.getExistingDirectory(self)
+            file = open(f"{path}/info.csv", "w", encoding="UTF-8")
+            print(data)
+            for el in data:
+                keys = tuple(el.keys())
+                to_write = ";".join(el[i] for i in keys)
+                print(to_write, file=file)
+                # to_write = [el[_] for _ in keys]
+                # file.write(to_write)
+                # writer.writerow(to_write)
+            file.close()
+        except AttributeError:
+            self.notenoughdata()
+
+    def import_file(self):
+        path = QFileDialog.getOpenFileName(self, 'Choose file', '','(*.csv)')[0]
+        file = open(path)
+        delta = self.tableWidget.rowCount()
+        for i, line in enumerate(file):
+            data = line.split(";")
+            if data[0] in self.types and data[1] in self.subtypes:
+                self.tableWidget.setRowCount(self.tableWidget.rowCount() + 1)
+                for j in range(4):
+                    self.tableWidget.setItem(i + delta, j, QTableWidgetItem(str(data[j]).strip("\n")))
+            else:
+                if data[0] not in self.types:
+                    msg = f"No such type {data[0]}, would you like to add it?"
+                else:
+                    msg = f"No such subtype {data[1]} in type {data[0]}, would you like to add it?"
+                reply = QMessageBox.question(self, "Import error", msg, QMessageBox.Yes, QMessageBox.No)
+
+                if reply == QMessageBox.Yes:
+                    self.type_add = data[0]
+                    self.subtype_add = data[1]
+                    self.addsubtype()
+                    self.init_buttons()
+                    self.tableWidget.setRowCount(self.tableWidget.rowCount() + 1)
+                    for j in range(4):
+                        self.tableWidget.setItem(i + delta, j, QTableWidgetItem(str(data[j])))
+
 
 def encrypt(password):
     return sha256(password).hexdigest()
@@ -470,13 +564,17 @@ def logined():
 
 
 if __name__ == '__main__':
-    framestyle = """
+    if os.uname().sysname != "Windows":
+        framestyle = """
                 border-radius: 1px;
                 """
-    appstyle = """
+        appstyle = """
                 color: #ffffff;
                 background-color: #333333;
                 """
+    else:
+        framestyle = ""
+        appstyle = ""
     path = f"{str(os.path.expanduser('~'))}/.local/share/homeaccountant/db.db"
     try:
         open(path)
