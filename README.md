@@ -19,7 +19,7 @@
 
 Установка зависимостей:
 ```
-pip3 install -r requirements.txt
+pip3 install -r requirements.txt # Не требуется при установки с помощью скрипта
 ```
 Запуск:
 
