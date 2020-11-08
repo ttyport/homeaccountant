@@ -31,5 +31,5 @@ python3 main.py
 Linux:
 
 ```
-sudo ./install.sh #Установка программы в систему
+sudo sh install.sh #Установка программы в систему
 ```
