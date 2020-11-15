@@ -3,7 +3,6 @@
 
 import sys
 
-import os
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.Qt import Qt
@@ -1031,7 +1030,7 @@ if __name__ == '__main__':
         framestyle = ""
         appstyle = ""
 
-    path = f"{str(os.path.expanduser('~'))}/.local/share/homeaccountant/db.db"
+    path = "/usr/share/homeaccountant/db.db"
     try:
         open(path).close()
     except FileNotFoundError:
