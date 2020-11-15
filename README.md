@@ -9,8 +9,7 @@
 ├── db.db                - База данных
 ├── install.sh           - Установочный скрипт для linux
 ├── main.py              - Основной файл
-├── requirements.txt     - Файл со списком зависимостей
-└── uninstall.sh         - Скрипт удаления с linux
+└── requirements.txt     - Файл со списком зависимостей
 ```
 
 ## Запуск и установка
@@ -31,5 +30,5 @@ python3 main.py
 Linux:
 
 ```
-sudo sh install.sh #Установка программы в систему
+sh install.sh # Установка программы в систему
 ```
