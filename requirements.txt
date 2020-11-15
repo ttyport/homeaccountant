@@ -1,3 +1,4 @@
 PyQt5~=5.15.1
 screeninfo~=0.6.6
+PyQtChart~=5.15.1
 PyQtGraph~=0.11.0
