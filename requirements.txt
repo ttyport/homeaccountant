@@ -1,2 +1,0 @@
-PyQt5~=5.15.1
-screeninfo~=0.6.6
