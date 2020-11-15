@@ -3,6 +3,7 @@
 
 import sys
 
+import os
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.Qt import Qt
@@ -400,11 +401,14 @@ class Example(QMainWindow):
         self.dialog_delete_income.close()
 
     def init_graph_data(self):
-        for i in range(self.tableWidget.rowCount()):
-            try:
-                self.graph_data[self.tableWidget.item(i, 0).text()] += float(self.tableWidget.item(i, 3).text())
-            except:
-                self.graph_data[self.tableWidget.item(i, 0).text()] = float(self.tableWidget.item(i, 3).text())
+        try:
+            for i in range(self.tableWidget.rowCount()):
+                try:
+                    self.graph_data[self.tableWidget.item(i, 0).text()] += float(self.tableWidget.item(i, 3).text())
+                except:
+                    self.graph_data[self.tableWidget.item(i, 0).text()] = float(self.tableWidget.item(i, 3).text())
+        except AttributeError:
+            pass
 
     def init_money(self):
         money = 0
