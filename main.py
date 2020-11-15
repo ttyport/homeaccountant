@@ -1030,7 +1030,7 @@ if __name__ == '__main__':
         framestyle = ""
         appstyle = ""
 
-    path = "/usr/share/homeaccountant/db.db"
+    path = f"{str(os.path.expanduser('~'))}/.homeaccountant/db.db"
     try:
         open(path).close()
     except FileNotFoundError:
