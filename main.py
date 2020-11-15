@@ -758,6 +758,7 @@ class Example(QMainWindow):
         self.chartView.repaint()
 
     def init_buttons(self):
+        self.buttons.setRowCount(0)
         cursor = db.cursor()
         result = cursor.execute("SELECT type FROM types").fetchall()
         self.buttons.setColumnCount(len(result))
@@ -785,7 +786,6 @@ class Example(QMainWindow):
         for i in range(len(result1)):
             for j in range(max_len - len(result1[i])):
                 result1[i].append(None)
-        self.buttons.clear()
         for i, elem in enumerate(result1):
             for j, val in enumerate(elem):
                 if val is not None:
@@ -976,7 +976,7 @@ class Example(QMainWindow):
         try:
             path = QFileDialog.getOpenFileName(self, 'Choose file', '','(*.csv)')[0]
             file = open(path)
-            self.tableWidget.clear()
+            self.tableWidget.setRowCount(0)
             self.tableWidget.setRowCount(0)
             for i, line in enumerate(file):
                 data = line.split(";")
