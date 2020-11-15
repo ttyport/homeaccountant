@@ -7,3 +7,5 @@ cp main.py /usr/bin
 cd /usr/bin
 mv main.py homeaccountant
 chmod +x homeaccountant
+cd /usr/share/homeaccountant/
+sudo chmod 777 db.db
