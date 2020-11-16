@@ -21,15 +21,15 @@ near = [
     'йцу', 'цук', 'уке', 'кен', 'енг', 'нгш', 'гшщ', 'шщз', 'щзх', 'зхъ',
     'фыв', 'ыва', 'вап', 'апр', 'про', 'рол', 'олд', 'лдж', 'джэ',
     'ячс', 'чсм', 'сми', 'мит', 'ить', 'тьб', 'ьбю', 'жэё'
-]
+]  # Список рядом стоящих сочетаний букв
 
 
-class LoginFirstTime(QDialog):
+class LoginFirstTime(QDialog):  # Диалог создания учетной записи
     def __init__(self):
         super().__init__()
         self.initUI()
 
-    def initUI(self):
+    def initUI(self):  # Инициализация GUI
         self.frame = QFrame()
         self.frame.setStyleSheet(framestyle)
         self.setStyleSheet(appstyle)
@@ -54,7 +54,7 @@ class LoginFirstTime(QDialog):
         self.ok.clicked.connect(self.write)
         self.show()
 
-    def write(self):
+    def write(self):  # Запись логина и пароля в базу данных
         password = self.password.text()
         if len(password) > 7:
             if password.lower() != password and password.upper() != password:
@@ -87,17 +87,18 @@ class LoginFirstTime(QDialog):
 
             cursor.execute(query, (self.login.text(), str(hash.hexdigest())), )
             db.commit()
-            self.new_window = Example()
+
+            self.new_window = Main()
             self.new_window.show()
             self.hide()
 
 
-class Login(QDialog):
+class Login(QDialog):  # Диалог входа в программу
     def __init__(self):
         super().__init__()
         self.initUI()
 
-    def initUI(self):
+    def initUI(self):  # Инициализация GUI
         self.frame = QFrame()
         self.frame.setStyleSheet(framestyle)
         self.setStyleSheet(appstyle)
@@ -122,14 +123,14 @@ class Login(QDialog):
         self.ok.clicked.connect(self.launch)
         self.show()
 
-    def launch(self):
+    def launch(self):  # Запуск основного окна
         cursor = db.cursor()
         result = cursor.execute("""select * from login""").fetchall()
         string_to_hash = self.password.text()
         hash = sha256(str(string_to_hash).encode('utf-8'))
         if str(hash.hexdigest()) == result[0][-1] and self.login.text() == result[0][0]:
 
-            self.new_window = Example()
+            self.new_window = Main()
             self.new_window.show()
             self.hide()
         else:
@@ -142,9 +143,9 @@ class Login(QDialog):
             msg.exec_()
 
 
-class Example(QMainWindow):
+class Main(QMainWindow):  # Основное окно
 
-    def __init__(self):
+    def __init__(self):  # Инициализация всех виджетов
         super().__init__()
         self.initUI()
         self.init_table()
@@ -157,11 +158,11 @@ class Example(QMainWindow):
         self.refresh_graph()
         self.init_spent()
 
-    def initUI(self):
+    def initUI(self):  # Инициализация GUI
         self.frame = QFrame()
         self.frame.setStyleSheet(framestyle)
         self.setStyleSheet(appstyle)
-
+        # Настройка меню
         exitAction = QAction('&Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
@@ -230,7 +231,7 @@ class Example(QMainWindow):
         self.mainwidget = QWidget(self)
         self.setCentralWidget(self.mainwidget)
 
-        self.tabWidget = QTabWidget(self.mainwidget)
+        self.tabWidget = QTabWidget(self.mainwidget)  # Виджет вкладок
         self.tabWidget.setGeometry(0, 0, self.y, self.x)
 
         self.tab = QWidget()
@@ -269,6 +270,7 @@ class Example(QMainWindow):
         self.tab3 = QWidget()
         self.tabWidget.addTab(self.tab3, "Отчетность")
 
+        # Создание графика
         self.series = QHorizontalBarSeries()
         self.chart = QChart()
         self.chart.setTitle("Сводка расходов")
@@ -329,7 +331,7 @@ class Example(QMainWindow):
         self.graph_data = {}
         self.showMaximized()
 
-    def del_row_1(self):
+    def del_row_1(self):  # Удаление записей из доходов
         try:
             self.money -= float(self.money_table.item(self.money_table.currentRow(), 1).text())
             self.left_btn.setText(str(self.money))
@@ -337,7 +339,7 @@ class Example(QMainWindow):
             pass
         self.money_table.removeRow(self.money_table.currentRow())
 
-    def init_spent(self):
+    def init_spent(self):  # Обновление потраченных денег
         spent = 0
         try:
             for i in range(self.tableWidget.rowCount()):
@@ -347,7 +349,7 @@ class Example(QMainWindow):
         except AttributeError:
             pass
 
-    def add_type_income_dialog(self):
+    def add_type_income_dialog(self):  # Диалог добавления типа доходов
         self.dialog_add_income = QDialog()
         self.dialog_add_income.setStyleSheet(appstyle)
         self.dialog_add_income.setWindowTitle("Add type")
@@ -364,7 +366,7 @@ class Example(QMainWindow):
         savebtn.clicked.connect(self.dialog_add_income.close)
         self.dialog_add_income.exec_()
 
-    def addtypeincome(self):
+    def addtypeincome(self):  # Добавление типа доходов (вызывается соответствующим диалогом)
         text = self.type_add.text()
         cursor = db.cursor()
         query = f"insert into income_types(type) values('{text}')"
@@ -374,7 +376,7 @@ class Example(QMainWindow):
         self.init_income_buttons()
         self.dialog_add_income.close()
 
-    def delete_income_type_dialog(self):
+    def delete_income_type_dialog(self):  # Диалог удаления типа доходов
         self.dialog_delete_income = QDialog()
         self.dialog_delete_income.setStyleSheet(appstyle)
         self.dialog_delete_income.setWindowTitle("Delete income type")
@@ -391,7 +393,7 @@ class Example(QMainWindow):
         savebtn.clicked.connect(self.dialog_delete_income.close)
         self.dialog_delete_income.exec_()
 
-    def deleteincometype(self):
+    def deleteincometype(self):  # Удаление типа доходов (вызывается соответствующим диалогом)
         cursor = db.cursor()
         query = f"""delete from income_types where type = '{self.type_del_income.currentText()}'"""
         cursor.execute(query)
@@ -400,7 +402,7 @@ class Example(QMainWindow):
         self.init_income_buttons()
         self.dialog_delete_income.close()
 
-    def init_graph_data(self):
+    def init_graph_data(self):  # Обновление данных для графика отчетности
         try:
             for i in range(self.tableWidget.rowCount()):
                 try:
@@ -410,7 +412,7 @@ class Example(QMainWindow):
         except AttributeError:
             pass
 
-    def init_money(self):
+    def init_money(self):  # Обновления оставщихся денег
         money = 0
         try:
             for i in range(self.money_table.rowCount()):
@@ -424,7 +426,7 @@ class Example(QMainWindow):
         self.money = money
         self.left_btn.setText(str(self.money))
 
-    def init_income_buttons(self):
+    def init_income_buttons(self):  # Инициализация кнопок типов доходов
         cursor = db.cursor()
         result = cursor.execute("SELECT type FROM income_types").fetchall()
 
@@ -445,7 +447,7 @@ class Example(QMainWindow):
             self.income_buttons.setCellWidget(0, i, button)
         self.income_buttons.show()
 
-    def add_income(self):
+    def add_income(self):  # Добавление записи дохода
         try:
             self.money_table.item(0, 0).text()
             self.money_table.setRowCount(self.money_table.rowCount() + 1)
@@ -463,7 +465,7 @@ class Example(QMainWindow):
             self.money_table.setCurrentCell(0, 1)
             self.money_table.setItem(0, 2, QTableWidgetItem(date.today().strftime('%Y-%m-%d')))
 
-    def init_income_types(self):
+    def init_income_types(self):  # Обновление словаря с типами доходов
         cursor = db.cursor()
         result = cursor.execute("SELECT id, type FROM income_types").fetchall()
         for i in range(len(result)):
@@ -474,14 +476,10 @@ class Example(QMainWindow):
         for el in result:
             self.income_type[el[1]] = el[0]
 
-    def init_incomes(self):
+    def init_incomes(self):  # Выведение уже записанных доходов в таблицу
         cursor = db.cursor()
         query = "select type, price, date from incomes"
         result = cursor.execute(query).fetchall()
-        # if self.money_table.rowCount() == 0:
-        #     self.money_table.setRowCount(1)
-        #     self.money_table.setItem(0, 2, QTableWidgetItem(date.today().strftime('%Y-%m-%d')))
-        # else:
         self.money_table.setRowCount(len(result))
         self.money_table.setColumnCount(4)
         titles = ["Доход", "Прибыль", "Дата"]
@@ -503,7 +501,7 @@ class Example(QMainWindow):
         self.money_table.itemChanged.connect(self.money_item_changed)
         self.money_table.show()
 
-    def money_item_changed(self, item):
+    def money_item_changed(self, item):  # Функция, которая реагирует на изменение данных в таблице доходов
         if item.column() == 1:
             try:
                 float(item.text())
@@ -524,7 +522,7 @@ class Example(QMainWindow):
             self.left_btn.setText(str(self.money))
             self.money_table.setItem(item.row(), 3, QTableWidgetItem(item.text()))
 
-    def init_type(self):
+    def init_type(self):  # Обновление словаря с типами покупок
         cursor = db.cursor()
         query_types = "select * from types"
         result = cursor.execute(query_types).fetchall()
@@ -537,7 +535,7 @@ class Example(QMainWindow):
         for i in result:
             self.subtypes[i[2]] = i[0]
 
-    def deletetypedialog(self):
+    def deletetypedialog(self):  # Диалог удаления типа покупок
         self.dialog_delete_type = QDialog()
         self.dialog_delete_type.setStyleSheet(appstyle)
         self.dialog_delete_type.setWindowTitle("Delete Type")
@@ -554,7 +552,7 @@ class Example(QMainWindow):
         savebtn.clicked.connect(self.dialog_delete_type.close)
         self.dialog_delete_type.exec_()
 
-    def deletetype(self):
+    def deletetype(self):  # Удаление типа покупок (вызывается соответствующей функцией)
         cursor = db.cursor()
         query = f"delete from subtypes where type = {self.types[self.type_del_type.currentText()]}"
         cursor.execute(query)
@@ -565,7 +563,7 @@ class Example(QMainWindow):
         self.init_buttons()
         self.dialog_delete_type.close()
 
-    def deletesubtypedialog(self):
+    def deletesubtypedialog(self):  # Диалог удаления подтипа покупок
         self.dialog_delete_type = QDialog()
         self.dialog_delete_type.setStyleSheet(appstyle)
         self.dialog_delete_type.setWindowTitle("Delete subtype")
@@ -592,7 +590,7 @@ class Example(QMainWindow):
         savebtn.clicked.connect(self.dialog_delete_type.close)
         self.dialog_delete_type.exec_()
 
-    def changed(self):
+    def changed(self):  # Какой то костыль, я честно не знаю, что он делает, но без него ничего не работает
         self.subtype_del_type.clear()
         keys = []
         cursor = db.cursor()
@@ -602,8 +600,7 @@ class Example(QMainWindow):
             keys.append(str(el[0]))
         self.subtype_del_type.addItems(keys)
 
-
-    def deletesubtype(self):
+    def deletesubtype(self):  # Удаление подтипа покупок (вызывается соответствующей функцией)
         query = f"""delete from subtypes where subtype = '{
         self.subtype_del_type.currentText()}' and type = {self.types[self.type_del_type.currentText()]}"""
         cursor = db.cursor()
@@ -613,7 +610,7 @@ class Example(QMainWindow):
         self.init_buttons()
         self.dialog_delete_type.close()
 
-    def addsubtypedialog(self):
+    def addsubtypedialog(self):  # Диалог добавления подтипа покупок
         self.dialog_delete_type = QDialog()
         self.dialog_delete_type.setStyleSheet(appstyle)
         self.dialog_delete_type.setWindowTitle("Add type")
@@ -633,7 +630,7 @@ class Example(QMainWindow):
         savebtn.clicked.connect(self.dialog_delete_type.close)
         self.dialog_delete_type.exec_()
 
-    def addsubtype(self):
+    def addsubtype(self):  # Добавление подтипа покупок (вызывается соответствующей функцией)
         if type(self.subtype_add) != str and type(self.type_add) != str:
             self.subtype_add = str(self.subtype_add.text())
             self.type_add = str(self.type_add.text())
@@ -650,7 +647,7 @@ class Example(QMainWindow):
         except AttributeError:
             pass
 
-    def addtype(self):
+    def addtype(self):  # Добавление типа (вызывается соответствующей функцией)
         if type(self.type_add) != str:
             self.type_add = str(self.type_add.text())
         query = f"insert into types(type) values('{self.type_add}')"
@@ -659,7 +656,7 @@ class Example(QMainWindow):
         db.commit()
         self.init_type()
 
-    def init_table(self):
+    def init_table(self):  # Выведение уже записанных расходов в таблицу
         cursor = db.cursor()
         result = cursor.execute("SELECT type, subtype, name, price, date FROM purchases").fetchall()
         try:
@@ -694,7 +691,7 @@ class Example(QMainWindow):
         self.refresh_graph()
         self.saved = True
 
-    def deleterow(self):
+    def deleterow(self):  # Удаление записи из таблицы расходов
         try:
             try:
                 self.graph_data[self.tableWidget.item(self.tableWidget.currentRow(), 0).text()] -= \
@@ -710,7 +707,7 @@ class Example(QMainWindow):
             pass
         self.tableWidget.removeRow(self.tableWidget.currentRow())
 
-    def item_changed(self, item):
+    def item_changed(self, item):  # Функция, которая реагирует на изменение элемента в таблице расходов
         text = self.tableWidget.item(item.row(), 0).text()
         if item.column() == 3:
             try:
@@ -745,7 +742,7 @@ class Example(QMainWindow):
             self.tableWidget.setItem(item.row(), 5, QTableWidgetItem(item.text()))
         self.saved = False
 
-    def refresh_graph(self):
+    def refresh_graph(self):  # Обновление и перерисовка графика
         self.chart.removeAllSeries()
         self.chart.removeAxis(self.axisX)
         self.series = QHorizontalBarSeries()
@@ -760,7 +757,7 @@ class Example(QMainWindow):
         self.series.attachAxis(self.axisX)
         self.chartView.repaint()
 
-    def init_buttons(self):
+    def init_buttons(self):  # Инициализация кнопок добавления расхода
         self.buttons.setRowCount(0)
         cursor = db.cursor()
         result = cursor.execute("SELECT type FROM types").fetchall()
@@ -797,7 +794,7 @@ class Example(QMainWindow):
                     self.buttons.setCellWidget(j, i, button)
         self.buttons.show()
 
-    def add_record(self):
+    def add_record(self):  # Добавление записи в таблицу расходов
         try:
             self.tableWidget.item(0, 0).text()
             self.tableWidget.setRowCount(self.tableWidget.rowCount() + 1)
@@ -819,7 +816,7 @@ class Example(QMainWindow):
             self.tableWidget.setCurrentCell(0, 3)
             self.tableWidget.setItem(0, 4, QTableWidgetItem(date.today().strftime('%Y-%m-%d')))
 
-    def save(self):
+    def save(self):  # Сохранение всех данных в бд
         if self.tableWidget.rowCount() > 0:
             try:
                 data = []
@@ -913,8 +910,7 @@ class Example(QMainWindow):
             db.commit()
             self.saved = True
 
-
-    def notenoughdata(self):
+    def notenoughdata(self):  # Диалог незаполненной таблицы
         msg = QMessageBox()
         msg.setStyleSheet(appstyle)
         msg.setIcon(QMessageBox.Critical)
@@ -923,7 +919,7 @@ class Example(QMainWindow):
         msg.setStandardButtons(QMessageBox.Close)
         msg.exec_()
 
-    def quit(self):
+    def quit(self):  # Вызывается при выходе из приложения если данные не сохранены
         if not self.saved:
             self.dialog = QDialog()
             self.dialog.setStyleSheet(appstyle)
@@ -943,7 +939,7 @@ class Example(QMainWindow):
         else:
             qApp.quit()
 
-    def export(self):
+    def export(self):  # Экспорт в .csv файл
         try:
             try:
                 data = []
@@ -965,9 +961,6 @@ class Example(QMainWindow):
                 for el in data:
                     keys = tuple(el.keys())
                     to_write = ";".join(el[i] for i in keys)
-                    # to_write = [el[_] for _ in keys]
-                    # file.write(to_write)
-                    # writer.writerow(to_write)
                     print(to_write, file=file)
                 file.close()
             except AttributeError:
@@ -975,7 +968,7 @@ class Example(QMainWindow):
         except PermissionError:
             pass
 
-    def import_file(self):
+    def import_file(self):  # Импорт из .csv файла
         try:
             path = QFileDialog.getOpenFileName(self, 'Choose file', '','(*.csv)')[0]
             file = open(path)
@@ -1009,11 +1002,11 @@ class Example(QMainWindow):
             pass
 
 
-def encrypt(password):
+def encrypt(password):  # Шифровка пароля
     return sha256(password).hexdigest()
 
 
-def logined():
+def logined():  # Определяет, зарегестрирован ли пользователь
     cursor = db.cursor()
     result = cursor.execute("""select * from login""").fetchall()
     if len(result) > 0:
@@ -1040,10 +1033,6 @@ if __name__ == '__main__':
     except FileNotFoundError:
         path = "db.db"
     db = sqlite3.connect(path)
-    # cursor = db.cursor()
-    # query = "drop table money"
-    # cursor.execute(query)
-    # db.commit()
     app = QApplication(sys.argv)
     app.setStyle(QStyleFactory.create("Breeze"))
     if not logined():
