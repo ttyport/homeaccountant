@@ -729,8 +729,8 @@ class Main(QMainWindow):  # Основное окно
                 if reply == QMessageBox.Ok:
                     return
             if float(item.text()) < 0:
-                msg = "Доход не может быть меньше нуля"
-                title = "Income error"
+                msg = "Цена не может быть меньше нуля"
+                title = "Price error"
                 reply = QMessageBox.critical(self, title, msg, QMessageBox.Ok)
 
                 if reply == QMessageBox.Ok:
