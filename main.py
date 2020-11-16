@@ -506,12 +506,21 @@ class Main(QMainWindow):  # Основное окно
             try:
                 float(item.text())
             except ValueError:
-                msg = "Цена должна быть числом"
-                title = "Price error"
+                msg = "Доход должен быть числом"
+                title = "Income error"
                 reply = QMessageBox.critical(self, title, msg, QMessageBox.Ok)
 
                 if reply == QMessageBox.Ok:
                     return
+
+            if float(item.text()) < 0:
+                msg = "Доход не может быть меньше нуля"
+                title = "Income error"
+                reply = QMessageBox.critical(self, title, msg, QMessageBox.Ok)
+
+                if reply == QMessageBox.Ok:
+                    return
+
             try:
                 last = float(self.money_table.item(item.row(), 3).text())
             except AttributeError:
@@ -715,6 +724,13 @@ class Main(QMainWindow):  # Основное окно
             except ValueError:
                 msg = "Цена должна быть числом"
                 title = "Price error"
+                reply = QMessageBox.critical(self, title, msg, QMessageBox.Ok)
+
+                if reply == QMessageBox.Ok:
+                    return
+            if float(item.text()) < 0:
+                msg = "Доход не может быть меньше нуля"
+                title = "Income error"
                 reply = QMessageBox.critical(self, title, msg, QMessageBox.Ok)
 
                 if reply == QMessageBox.Ok:
